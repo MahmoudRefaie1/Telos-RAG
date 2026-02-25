@@ -1,3 +1,7 @@
+#This is just a simple program to test how to use chromadb for storing and querying memories.
+#So I added 9 memories and then queried for the 3 most similar memories to "I feel burnt out from studying". 
+#The results are printed with their IDs, text, and distance from the query.
+
 import chromadb
 
 # Creating and testing  chromadb.
