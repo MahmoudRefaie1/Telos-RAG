@@ -8,14 +8,27 @@ collection = client.create_collection("test_memories")
 collection.add(
     documents=["I felt anxious before midterms", 
                "Painting helped me relax",
-               "I want to learn Spanish"],
-    ids=["mem1", "mem2", "mem3"]
+               "I want to learn Spanish",
+               "I enjoy hiking in the mountains",
+               "Cooking is a great stress reliever",
+               "I have a fear of public speaking",
+               "I find comfort in listening to music",
+               "Last Friday, I went to the gym which made me feel energized for my academic work",
+               "I struggle with time management"],
+    ids=["mem1", "mem2", "mem3", "mem4", "mem5", "mem6", "mem7", "mem8", "mem9"]
 )
 
-# Retrieve similar memory
 results = collection.query(
     query_texts=["I feel burnt out from studying"],
-    n_results=1
+    n_results=3
 )
 
-print("Retrieved:", results)
+
+for doc_id, doc_text, dist in zip(
+        results["ids"][0],
+        results["documents"][0],
+        results["distances"][0]
+    ):
+    print(f"- ID: {doc_id}")
+    print(f"  Text: {doc_text}")
+    print(f"  Distance: {dist:.3f}\n")
