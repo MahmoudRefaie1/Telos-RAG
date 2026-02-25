@@ -4,7 +4,7 @@ import chromadb
 client = chromadb.Client()
 collection = client.create_collection("test_memories")
 
-# Store 3 memories
+# Storing some memories
 collection.add(
     documents=["I felt anxious before midterms", 
                "Painting helped me relax",
