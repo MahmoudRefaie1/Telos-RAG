@@ -1,0 +1,94 @@
+"""
+Telos RAG memory (Chroma) — LOCAL EMBEDDINGS version
+Same as TelosRAG_OPENAI.py but uses a free local model instead of OpenAI.
+No API key needed. Works offline.
+"""
+
+import os
+from datetime import datetime, timezone
+
+import chromadb
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+
+# -----------------------------
+# 1) Configure persistence + embeddings (FREE LOCAL MODEL)
+# -----------------------------
+CHROMA_PATH = "./chroma_local"  # separate folder so it doesn't conflict with old chroma
+
+local_ef = SentenceTransformerEmbeddingFunction(
+    model_name="all-MiniLM-L6-v2"  # free, ~80MB, downloads once, then cached
+)
+
+client = chromadb.PersistentClient(path=CHROMA_PATH)
+collection = client.get_or_create_collection(
+    name="telos_memories_local",
+    embedding_function=local_ef,
+    metadata={"hnsw:space": "cosine"},
+)
+
+# -----------------------------
+# 2) Seed data
+# -----------------------------
+memories = [
+    {"id": "m1", "text": "Felt anxious before midterms, painting helped me relax",       "eeg": "high_stress"},
+    {"id": "m2", "text": "High alpha detected during Spanish practice, needed break",     "eeg": "low_focus"},
+    {"id": "m3", "text": "Walking outside helped after burnout from studying",            "eeg": "high_stress"},
+    {"id": "m4", "text": "Goal: learn Spanish 30 minutes daily",                         "eeg": "focused"},
+    {"id": "m5", "text": "Felt overwhelmed by deadlines, taking a nap helped",           "eeg": "high_stress"},
+    {"id": "m6", "text": "Focused study session after coffee, completed 3 assignments",  "eeg": "focused"},
+]
+
+USER_ID = "mahmoud"
+
+existing_ids = set(collection.get()["ids"])
+to_add = [m for m in memories if m["id"] not in existing_ids]
+
+if to_add:
+    now_iso = datetime.now(timezone.utc).isoformat()
+    collection.add(
+        documents=[m["text"] for m in to_add],
+        ids=[m["id"] for m in to_add],
+        metadatas=[
+            {
+                "eeg":        m["eeg"],
+                "user_id":    USER_ID,
+                "created_at": now_iso,
+            }
+            for m in to_add
+        ],
+    )
+    print(f"Added {len(to_add)} new memories to '{CHROMA_PATH}'.\n")
+else:
+    print("No new memories to add (already exist).\n")
+
+# -----------------------------
+# 3) Test queries
+# -----------------------------
+queries = [
+    "I feel burnt out from studying",
+    "Help me stay focused",
+    "What helped me relax before?",
+]
+
+for query in queries:
+    results = collection.query(
+        query_texts=[query],
+        n_results=2,
+        where={"user_id": USER_ID},
+        include=["documents", "metadatas", "distances"],
+    )
+
+    print(f"Query: '{query}'")
+    print("-" * 50)
+
+    for doc_id, doc_text, dist, meta in zip(
+        results["ids"][0],
+        results["documents"][0],
+        results["distances"][0],
+        results["metadatas"][0],
+    ):
+        sim = 1 - dist
+        print(f"  Match : {doc_text}")
+        print(f"  EEG   : {meta.get('eeg')}")
+        print(f"  Score : {sim:.3f}  (distance {dist:.3f})")
+    print()
