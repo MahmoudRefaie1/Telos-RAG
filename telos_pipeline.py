@@ -82,6 +82,6 @@ def ask_telos(user_id: str, query: str, eeg_state: str = None) -> str:
 if __name__ == "__main__":
     ask_telos(
         user_id   = "mahmoud",
-        query     = "I feel burnt out from studying",
+        query     = "Is it a good idea to go to the gym when I feel stressed about exams?",
         eeg_state = "high_stress",
     )

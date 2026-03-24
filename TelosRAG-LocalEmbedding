@@ -36,6 +36,7 @@ memories = [
     {"id": "m4", "text": "Goal: learn Spanish 30 minutes daily",                         "eeg": "focused"},
     {"id": "m5", "text": "Felt overwhelmed by deadlines, taking a nap helped",           "eeg": "high_stress"},
     {"id": "m6", "text": "Focused study session after coffee, completed 3 assignments",  "eeg": "focused"},
+    {"id": "m7", "text": "I went to the gym and it helped me focus on my studies and relax",  "eeg": "focused"},
 ]
 
 USER_ID = "mahmoud"
